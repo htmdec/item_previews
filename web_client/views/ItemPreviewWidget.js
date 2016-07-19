@@ -1,10 +1,15 @@
+import ItemCollection from 'girder/collections/ItemCollection';
+import View from 'girder/views/View';
+import { restRequest } from 'girder/rest';
+
+import ItemPreviewWidgetTemplate from '../templates/itemPreviewWidget.jade';
+import '../stylesheets/itemPreviewWidget.styl';
+
 /**
  * The Item Preview widget shows a preview of items under a given folder.
  * For now, the only supported item previews are image previews.
  */
-
-girder.views.ItemPreviewWidget = girder.View.extend({
-
+var ItemPreviewWidget = View.extend({
     events: {
         'click a.g-item-preview-link': function (event) {
             var id = this.$(event.currentTarget).data('id');
@@ -22,7 +27,7 @@ girder.views.ItemPreviewWidget = girder.View.extend({
     },
 
     initialize: function (settings) {
-        this.collection = new girder.collections.ItemCollection();
+        this.collection = new ItemCollection();
 
         this.collection.on('g:changed', function () {
             this.trigger('g:changed');
@@ -53,13 +58,12 @@ girder.views.ItemPreviewWidget = girder.View.extend({
 
         var view = this;
 
-        view.$el.html(girder.templates.itemPreviews({
+        view.$el.html(ItemPreviewWidgetTemplate({
             items: supportedItems,
             wrapPreviews: view.wrapPreviews,
             hasMore: this.collection.hasNextPage(),
             isImageItem: this._isImageItem,
-            isJSONItem: this._isJSONItem,
-            girder: girder
+            isJSONItem: this._isJSONItem
         }));
 
         // Render any JSON files.
@@ -73,7 +77,7 @@ girder.views.ItemPreviewWidget = girder.View.extend({
             }
 
             // Ajax request the JSON files to display them.
-            girder.restRequest({
+            restRequest({
                 path: 'item/' + id + '/download',
                 type: 'GET',
                 error: null // don't do default error behavior (validation may fail)
@@ -96,23 +100,4 @@ girder.views.ItemPreviewWidget = girder.View.extend({
 
 });
 
-girder.wrap(girder.views.HierarchyWidget, 'render', function (render) {
-    render.call(this);
-
-    // Only on folder views:
-    if (this.parentModel.resourceName === 'folder' && this._showItems) {
-        // Add the item-previews-container.
-        var element = $('<div class="g-item-previews-container">');
-        this.$el.append(element);
-
-        // Add the item preview widget into the container.
-        this.itemPreviewView = new girder.views.ItemPreviewWidget({
-            folderId: this.parentModel.get('_id'),
-            parentView: this,
-            el: element
-        })
-        .render();
-    }
-
-    return this;
-});
+export default ItemPreviewWidget;
