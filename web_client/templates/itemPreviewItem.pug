@@ -10,3 +10,7 @@
 
     else if content.type==='json'
       textarea.json(data-id=item.id)= JSON.stringify(content.value, null, '\t')
+
+    else if content.type==='video'
+      video(controls autoplay name=item.name())
+        source(src=content.value type='video/webm')

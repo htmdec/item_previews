@@ -48,7 +48,7 @@ var ItemPreviewWidget = View.extend({
     _LOAD_BATCH_SIZE: 2,
 
     _isSupportedItem: function (item) {
-        return this._isImageItem(item.name()) || this._isJSONItem(item.name());
+        return this._isImageItem(item.name()) || this._isJSONItem(item.name()) || this._isVideoItem(item.name());
     },
 
     _isJSONItem: function (str) {
@@ -57,6 +57,10 @@ var ItemPreviewWidget = View.extend({
 
     _isImageItem: function (str) {
         return /(jpg|jpeg|png|gif)$/i.test(str);
+    },
+
+    _isVideoItem: function (str) {
+        return /(mp4|webm|ogg)$/i.test(str);
     },
 
     setElement: function ($el) {
@@ -144,7 +148,16 @@ var ItemPreviewWidget = View.extend({
                 return $.Deferred().resolve(null).promise();
             }
             return this.getImageContent(`file/${file._id}/download`);
+        } else if (this._isVideoItem(contentType)) {
+            if (file.size > this._MAX_IMAGE_SIZE) {
+                return $.Deferred().resolve(null).promise();
+            }
+            return this.getVideoContent(`file/${file._id}/download`);
         }
+    },
+
+    getVideoContent: function (url) {
+        return {type: 'video', value: `${apiRoot}/${url}`};
     },
 
     getJsonContent: function (url) {
